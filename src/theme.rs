@@ -43,19 +43,11 @@ impl CatppuccinPalette {
             surface2: egui::Color32::from_rgb(88, 91, 112),
             blue: egui::Color32::from_rgb(137, 180, 250),
             sapphire: egui::Color32::from_rgb(116, 199, 236),
-            text: egui::Color32::from_rgb(138, 173, 244),
+            text: egui::Color32::from_rgb(205, 214, 244),
             selection_alpha: 0.4,
             is_dark: true,
         }
     }
-}
-
-pub fn apply_latte(ctx: &egui::Context) {
-    apply_palette(ctx, &CatppuccinPalette::latte());
-}
-
-pub fn apply_mocha(ctx: &egui::Context) {
-    apply_palette(ctx, &CatppuccinPalette::mocha());
 }
 
 pub fn apply_palette(ctx: &egui::Context, palette: &CatppuccinPalette) {

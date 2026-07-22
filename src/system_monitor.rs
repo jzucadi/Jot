@@ -115,7 +115,6 @@ mod macos {
             "Device Utilization %",
             "GPU Activity(%)",
             "GPU Core Utilization",
-            "hardwareWaitTime",
         ];
 
         for key_str in UTILIZATION_KEYS {
@@ -281,6 +280,41 @@ mod macos {
                     None
                 }
             }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn fourcc_round_trip() {
+            assert_eq!(fourcc_to_u32(b"sp78"), 0x7370_3738);
+        }
+
+        #[test]
+        fn parses_sp78_fixed_point() {
+            let mut data = SMCKeyData::default();
+            data.key_info.data_type = fourcc_to_u32(b"sp78");
+            data.bytes[0] = 0x3C;
+            data.bytes[1] = 0x80;
+            assert_eq!(parse_temperature_value(&data), Some(60.5));
+        }
+
+        #[test]
+        fn parses_flt_big_endian() {
+            let mut data = SMCKeyData::default();
+            data.key_info.data_type = fourcc_to_u32(b"flt ");
+            data.bytes[..4].copy_from_slice(&42.5f32.to_be_bytes());
+            assert_eq!(parse_temperature_value(&data), Some(42.5));
+        }
+
+        #[test]
+        fn rejects_garbage_fallback_bytes() {
+            let mut data = SMCKeyData::default();
+            data.key_info.data_type = fourcc_to_u32(b"ui32");
+            data.bytes[0] = 200;
+            assert_eq!(parse_temperature_value(&data), None);
         }
     }
 }
