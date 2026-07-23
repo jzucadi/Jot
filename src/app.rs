@@ -41,21 +41,22 @@ pub struct NotepadApp {
     pub last_system_refresh: Instant,
 }
 
+fn spawn_weather_fetch(weather: Arc<Mutex<Option<WeatherInfo>>>) {
+    thread::spawn(move || {
+        if let Some(info) = weather::fetch_weather() {
+            if let Ok(mut w) = weather.lock() {
+                *w = Some(info);
+            }
+        }
+    });
+}
+
 impl NotepadApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        theme::apply_mocha(&cc.egui_ctx);
+        theme::apply_palette(&cc.egui_ctx, &theme::CatppuccinPalette::mocha());
 
         let weather = Arc::new(Mutex::new(None));
-
-        // Fetch weather in background on startup
-        let weather_clone = Arc::clone(&weather);
-        thread::spawn(move || {
-            if let Some(info) = weather::fetch_weather() {
-                if let Ok(mut w) = weather_clone.lock() {
-                    *w = Some(info);
-                }
-            }
-        });
+        spawn_weather_fetch(Arc::clone(&weather));
 
         let mut system = System::new_all();
         system.refresh_cpu_all();
@@ -80,14 +81,7 @@ impl NotepadApp {
     pub fn refresh_weather_if_needed(&mut self) {
         if self.last_weather_fetch.elapsed() > Duration::from_secs(600) {
             self.last_weather_fetch = Instant::now();
-            let weather_clone = Arc::clone(&self.weather);
-            thread::spawn(move || {
-                if let Some(info) = weather::fetch_weather() {
-                    if let Ok(mut w) = weather_clone.lock() {
-                        *w = Some(info);
-                    }
-                }
-            });
+            spawn_weather_fetch(Arc::clone(&self.weather));
         }
     }
 
@@ -99,14 +93,15 @@ impl NotepadApp {
     }
 
     pub fn apply_theme(&self, ctx: &egui::Context) {
-        if self.dark_mode {
-            theme::apply_mocha(ctx);
+        let palette = if self.dark_mode {
+            theme::CatppuccinPalette::mocha()
         } else {
-            theme::apply_latte(ctx);
-        }
+            theme::CatppuccinPalette::latte()
+        };
+        theme::apply_palette(ctx, &palette);
     }
 
-    pub fn window_title(&self) -> String {
+    pub fn clock_text(&self) -> String {
         Local::now()
             .format("%A, %B %d, %Y  %I:%M:%S %p")
             .to_string()

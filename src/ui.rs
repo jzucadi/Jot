@@ -27,26 +27,21 @@ impl NotepadApp {
             .exact_height(32.0)
             .frame(egui::Frame::none().fill(base_color))
             .show(ctx, |ui| {
-                ui.horizontal_centered(|ui| {
-                    ui.add_space(80.0); // leave room for macOS traffic lights
+                ui.painter().text(
+                    ui.max_rect().center(),
+                    egui::Align2::CENTER_CENTER,
+                    self.clock_text(),
+                    egui::FontId::proportional(TITLE_BAR_FONT_SIZE),
+                    text_color,
+                );
 
-                    let time_text = self.window_title();
-                    let available_width = ui.available_width();
-                    ui.add_space((available_width - 300.0) / 2.0);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.add_space(15.0);
                     ui.label(
-                        egui::RichText::new(time_text)
+                        egui::RichText::new(&weather_text)
                             .color(text_color)
                             .size(TITLE_BAR_FONT_SIZE),
                     );
-
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.add_space(15.0);
-                        ui.label(
-                            egui::RichText::new(&weather_text)
-                                .color(text_color)
-                                .size(TITLE_BAR_FONT_SIZE),
-                        );
-                    });
                 });
             });
     }

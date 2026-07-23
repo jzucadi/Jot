@@ -7,6 +7,18 @@ struct GeoResponse {
     lon: f64,
 }
 
+#[derive(Debug, Deserialize)]
+struct ForecastResponse {
+    current_weather: CurrentWeather,
+}
+
+#[derive(Debug, Deserialize)]
+struct CurrentWeather {
+    temperature: f64,
+    #[serde(default)]
+    weathercode: i64,
+}
+
 #[derive(Debug, Clone)]
 pub struct WeatherInfo {
     pub temperature_f: f64,
@@ -15,27 +27,37 @@ pub struct WeatherInfo {
 }
 
 pub fn fetch_weather() -> Option<WeatherInfo> {
-    let geo_url = "http://ip-api.com/json/";
-    let client = reqwest::blocking::Client::builder()
+    let agent = ureq::AgentBuilder::new()
         .timeout(Duration::from_secs(10))
-        .build()
-        .ok()?;
+        .build();
 
-    let geo_resp: GeoResponse = client.get(geo_url).send().ok()?.json().ok()?;
+    // ponytail: ip-api free tier is http-only; only lat/lon cross the wire
+    let geo: GeoResponse = agent
+        .get("http://ip-api.com/json/")
+        .call()
+        .ok()?
+        .into_json()
+        .ok()?;
 
     let weather_url = format!(
         "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&current_weather=true&temperature_unit=fahrenheit",
-        geo_resp.lat, geo_resp.lon
+        geo.lat, geo.lon
     );
 
-    let resp = client.get(&weather_url).send().ok()?;
-    let json: serde_json::Value = resp.json().ok()?;
+    let forecast: ForecastResponse = agent.get(&weather_url).call().ok()?.into_json().ok()?;
 
-    let current = json.get("current_weather")?;
-    let temp = current.get("temperature")?.as_f64()?;
-    let weather_code = current.get("weathercode")?.as_i64().unwrap_or(0);
+    let (description, icon) = weather_code_display(forecast.current_weather.weathercode);
 
-    let (description, icon) = match weather_code {
+    Some(WeatherInfo {
+        temperature_f: forecast.current_weather.temperature,
+        description: description.to_string(),
+        icon: icon.to_string(),
+    })
+}
+
+/// Maps an Open-Meteo WMO weather code to (description, icon).
+fn weather_code_display(code: i64) -> (&'static str, &'static str) {
+    match code {
         0 => ("Clear", "\u{2600}"),
         1..=3 => ("Partly cloudy", "\u{26C5}"),
         45 | 48 => ("Foggy", "\u{1F32B}"),
@@ -48,11 +70,23 @@ pub fn fetch_weather() -> Option<WeatherInfo> {
         95 => ("Thunderstorm", "\u{26C8}"),
         96 | 99 => ("Thunderstorm", "\u{26C8}"),
         _ => ("Unknown", "\u{2601}"),
-    };
+    }
+}
 
-    Some(WeatherInfo {
-        temperature_f: temp,
-        description: description.to_string(),
-        icon: icon.to_string(),
-    })
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn known_codes_map_to_descriptions() {
+        assert_eq!(weather_code_display(0).0, "Clear");
+        assert_eq!(weather_code_display(2).0, "Partly cloudy");
+        assert_eq!(weather_code_display(63).0, "Rain");
+        assert_eq!(weather_code_display(95).0, "Thunderstorm");
+    }
+
+    #[test]
+    fn unknown_code_falls_back() {
+        assert_eq!(weather_code_display(1234).0, "Unknown");
+    }
 }

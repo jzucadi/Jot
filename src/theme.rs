@@ -43,19 +43,11 @@ impl CatppuccinPalette {
             surface2: egui::Color32::from_rgb(88, 91, 112),
             blue: egui::Color32::from_rgb(137, 180, 250),
             sapphire: egui::Color32::from_rgb(116, 199, 236),
-            text: egui::Color32::from_rgb(138, 173, 244),
+            text: egui::Color32::from_rgb(205, 214, 244),
             selection_alpha: 0.4,
             is_dark: true,
         }
     }
-}
-
-pub fn apply_latte(ctx: &egui::Context) {
-    apply_palette(ctx, &CatppuccinPalette::latte());
-}
-
-pub fn apply_mocha(ctx: &egui::Context) {
-    apply_palette(ctx, &CatppuccinPalette::mocha());
 }
 
 pub fn apply_palette(ctx: &egui::Context, palette: &CatppuccinPalette) {
@@ -72,34 +64,34 @@ pub fn apply_palette(ctx: &egui::Context, palette: &CatppuccinPalette) {
 
     // Widgets
     style.visuals.widgets.noninteractive.bg_fill = palette.surface0;
-    style.visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, palette.text);
-    style.visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0_f32, palette.text);
+    style.visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     style.visuals.widgets.inactive.bg_fill = palette.surface0;
-    style.visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, palette.text);
-    style.visuals.widgets.inactive.bg_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0_f32, palette.text);
+    style.visuals.widgets.inactive.bg_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     style.visuals.widgets.hovered.bg_fill = palette.surface1;
-    style.visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.5, palette.text);
-    style.visuals.widgets.hovered.bg_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.5_f32, palette.text);
+    style.visuals.widgets.hovered.bg_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     style.visuals.widgets.active.bg_fill = palette.surface2;
-    style.visuals.widgets.active.fg_stroke = egui::Stroke::new(2.0, palette.text);
-    style.visuals.widgets.active.bg_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.widgets.active.fg_stroke = egui::Stroke::new(2.0_f32, palette.text);
+    style.visuals.widgets.active.bg_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     style.visuals.widgets.open.bg_fill = palette.surface1;
-    style.visuals.widgets.open.fg_stroke = egui::Stroke::new(1.0, palette.text);
-    style.visuals.widgets.open.bg_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.widgets.open.fg_stroke = egui::Stroke::new(1.0_f32, palette.text);
+    style.visuals.widgets.open.bg_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     // Selection
     style.visuals.selection.bg_fill = palette.blue.gamma_multiply(palette.selection_alpha);
-    style.visuals.selection.stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.selection.stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     // Hyperlinks
     style.visuals.hyperlink_color = palette.sapphire;
 
     // Window stroke
-    style.visuals.window_stroke = egui::Stroke::new(1.0, palette.base);
+    style.visuals.window_stroke = egui::Stroke::new(1.0_f32, palette.base);
 
     // Dark mode flag
     style.visuals.dark_mode = palette.is_dark;
