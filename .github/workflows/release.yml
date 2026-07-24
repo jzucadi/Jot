@@ -43,7 +43,6 @@ jobs:
             libwayland-dev \
             libgl1-mesa-dev \
             libvulkan-dev \
-            libssl-dev \
             libfontconfig1-dev
 
       - uses: dtolnay/rust-toolchain@stable
